@@ -1,0 +1,6 @@
+@TurboVolt_HostAddress = http://localhost:5160
+
+GET {{TurboVolt_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
