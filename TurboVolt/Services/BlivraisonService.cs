@@ -36,25 +36,25 @@ namespace TurboVolt.Services
             SELECT COUNT(1) FROM BLIVRAISON b /**where**/;
 
             SELECT 
-                b.ID_BON_LIVRAISON AS IdBonLivraison,
-                b.REF_BON_LIVRAISON AS RefBonLivraison,
-                b.NO_BON_LIVRAISON AS NoBonLivraison,
+                b.IdBL AS IdBonLivraison,
+                b.RefBonLivraison AS RefBonLivraison,
+                b.NoBonLivraison AS NoBonLivraison,
                 b.DESCRIPTION AS Description,
-                b.DATE_LIVRAISON AS DateLivraison,
-                b.TOTAL_BON_LIVRAISON_HT AS TotalBonLivraisonHt,
-                b.TOTAL_BON_LIVRAISON_TTC AS TotalBonLivraisonTtc,
-                b.TOTAL_REMISE AS TotalRemise,
+                b.DateLivraison AS DateLivraison,
+                b.TotalBonLivraisonHT AS TotalBonLivraisonHt,
+                b.TotalBonLivraisonTTC AS TotalBonLivraisonTtc,
+                b.TotalRemise AS TotalRemise,
                 b.RESTE_A_PAYER AS ResteAPayer,
-                c.ID_CLIENT AS IdClient,
-                c.NOM_CLIENT AS NomClient,
-                c.NUM_TELE AS Telephone,
+                c.IdClient AS IdClient,
+                c.NomClient AS NomClient,
+                c.NumClient AS Telephone,
                 c.VILLE AS Ville,
-                u1.ID_USER AS IdUser, u1.NOM AS Nom, u1.PRENOM AS Prenom,
-                u2.ID_USER AS IdUser, u2.NOM AS Nom, u2.PRENOM AS Prenom
+                u1.IdUser AS IdUser, u1.NOM AS Nom, u1.PRENOM AS Prenom,
+                u2.IdUser AS IdUser, u2.NOM AS Nom, u2.PRENOM AS Prenom
             FROM BLIVRAISON b
-            LEFT JOIN CLIENT c ON b.ID_CLIENT = c.ID_CLIENT
-            LEFT JOIN UTILISATEUR u1 ON b.ID_AGENT_CREATION = u1.ID_USER
-            LEFT JOIN UTILISATEUR u2 ON b.ID_AGENT_MODIFICATION = u2.ID_USER
+            LEFT JOIN CLIENT c ON b.IdClient = c.IdClient
+            LEFT JOIN dbo.[USER] u1 ON b.IDUser = u1.IdUser
+            LEFT JOIN dbo.[USER] u2 ON b.IDUser = u2.IdUser
             /**where**/
             ORDER BY b.DATE_LIVRAISON DESC
             OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
@@ -129,7 +129,7 @@ namespace TurboVolt.Services
 
                 foreach (var bl in blList)
                 {
-                    bl.Articles = lines.Where(x => x.IdBonLivraison == bl.IdBonLivraison).ToList();
+                    bl.BL_Articles = lines.Where(x => x.IdBonLivraison == bl.IdBonLivraison).ToList();
                 }
             }
 
