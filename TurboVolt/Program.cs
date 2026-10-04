@@ -1,7 +1,26 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using TurboVolt.Mappings;
 using TurboVolt.Models;
+using TurboVolt.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 1. Initialisation de Mapster
+MapsterConfig.RegisterMappings();
+
+// 2. Enregistrement de HybridCache (.NET 9)
+#pragma warning disable EXTEXP0018
+builder.Services.AddHybridCache();
+#pragma warning restore EXTEXP0018
+
+// 3. Enregistrement automatique des validateurs FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// 4. Injections des services applicatifs
+builder.Services.AddScoped<IBlivraisonService, BlivraisonService>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
+builder.Services.AddScoped<ILookupService, LookupService>();
 
 // Add services to the container.
 

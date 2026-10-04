@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TurboVolt.DTOs;
 
 namespace TurboVolt.Models;
 
@@ -97,7 +98,9 @@ public partial class Blivraison
 
     public virtual ICollection<BlivraisonXArticle> BlivraisonXArticle { get; set; } = new List<BlivraisonXArticle>();
 
-    public virtual User? IdUserModificationNavigation { get; set; }
+    public virtual UserResponseDto? IdUserModificationNavigation { get; set; }
 
-    public virtual User? IduserNavigation { get; set; }
+    public virtual UserResponseDto? IduserNavigation { get; set; }
+
+    public Client? Client { get; set; }
 }
