@@ -35,31 +35,37 @@ public class ArticleService : IArticleService
         var builder = new SqlBuilder();
         var selector = builder.AddTemplate(@"
             SELECT COUNT(1) FROM ARTICLE a /**where**/;
-            SELECT 
-                a.IdArticle AS IdArticle,
-                a.RefArticle AS RefArticle,
-                a.DESIGNATION AS Designation,
-                a.NumArticle AS NumArticle,
-                a.IdFamille AS IdFamille,
-                f.LibelleFamArticle AS LibelleFamille,
-                a.IdFamilleArticle AS IdFamilleArticle,
-                sf.LibelleSousFamille AS LibelleSousFamille,
-                a.PrixVenteArticleHT AS PrixVenteArticleHt,
-                a.PrixVenteArticleTTC AS PrixVenteArticleTtc,
-                a.PrixAchat AS PrixAchat,
-                a.PrixAchatTTC AS PrixAchatTtc,
-                a.DernierPrixAchat AS DernierPrixAchat,
-                a.DernierPrixVente AS DernierPrixVente,
-                a.PrixPublique AS PrixPublique
-            FROM ARTICLE a
-            LEFT JOIN FAMILLEARTICLE f ON a.IdFamille = f.IdFamilleArticle
-            LEFT JOIN SOUSFAMILLEARTICLE sf ON a.IdFamilleArticle = sf.IdSousFamille
-            
-            /**where**/
-            ORDER BY a.DESIGNATION
-            OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
-        ", new { Offset = (filter.PageNumber - 1) * filter.PageSize, PageSize = filter.PageSize });
 
+            WITH PagedArticles AS (
+                SELECT 
+                    a.IdArticle AS IdArticle,
+                    a.RefArticle AS RefArticle,
+                    a.DESIGNATION AS Designation,
+                    a.NumArticle AS NumArticle,
+                    a.IdFamille AS IdFamille,
+                    f.LibelleFamArticle AS LibelleFamille,
+                    a.IdFamilleArticle AS IdFamilleArticle,
+                    sf.LibelleSousFamille AS LibelleSousFamille,
+                    a.PrixVenteArticleHT AS PrixVenteArticleHt,
+                    a.PrixVenteArticleTTC AS PrixVenteArticleTtc,
+                    a.PrixAchat AS PrixAchat,
+                    a.PrixAchatTTC AS PrixAchatTtc,
+                    a.DernierPrixAchat AS DernierPrixAchat,
+                    a.DernierPrixVente AS DernierPrixVente,
+                    a.PrixPublique AS PrixPublique,
+                    ROW_NUMBER() OVER (ORDER BY a.DESIGNATION) AS RowNum
+                FROM ARTICLE a
+                LEFT JOIN FAMILLEARTICLE f ON a.IdFamille = f.IdFamilleArticle
+                LEFT JOIN SOUSFAMILLEARTICLE sf ON a.IdFamilleArticle = sf.IdSousFamille
+                /**where**/
+            )
+            SELECT * FROM PagedArticles
+            WHERE RowNum BETWEEN @StartRow AND @EndRow;
+        ", new
+        {
+            StartRow = ((filter.PageNumber - 1) * filter.PageSize) + 1,
+            EndRow = filter.PageNumber * filter.PageSize
+        });
         builder.Where("a.SUPPRIME IS NULL OR a.SUPPRIME = 0");
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))

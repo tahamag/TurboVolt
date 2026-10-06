@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using TurboVolt.Mappings;
 using TurboVolt.Models;
 using TurboVolt.Services;
+using Scalar.AspNetCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,8 @@ builder.Services.AddHybridCache();
 #pragma warning restore EXTEXP0018
 
 // 3. Enregistrement automatique des validateurs FluentValidation
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+//builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddValidatorsFromAssemblyContaining<TurboVolt.Validators.ArticleFilterValidator>();
 
 // 4. Injections des services applicatifs
 builder.Services.AddScoped<IBlivraisonService, BlivraisonService>();
@@ -41,12 +44,16 @@ builder.Services.AddCors(options =>
     });
 });
 
-var app = builder.Build();
+try
+{
+    builder.Services.AddOpenApi();
+    var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
@@ -56,3 +63,15 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+}
+catch (System.Reflection.ReflectionTypeLoadException ex)
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("=== DÉTAILS DE L'ERREUR DE REFLEXION ===");
+    foreach (var loaderEx in ex.LoaderExceptions)
+    {
+        Console.WriteLine($"-> {loaderEx?.Message}");
+    }
+    Console.ResetColor();
+    throw;
+}

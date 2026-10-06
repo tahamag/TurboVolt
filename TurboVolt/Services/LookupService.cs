@@ -37,16 +37,16 @@ public class LookupService : ILookupService
                 using var connection = CreateConnection();
                 string sql = @"
                     SELECT 
-                        ID_CLIENT AS IdClient,
-                        REF_CLT AS RefClt,
-                        NOM_CLIENT AS NomClient,
-                        NUM_TELE AS NumTele,
-                        EMAIL_CLIENT AS EmailClient,
+                        IdClient AS IdClient,
+                        RefClt AS RefClt,
+                        NomClient AS NomClient,
+                        NumTele AS NumTele,
+                        EmailClient AS EmailClient,
                         VILLE AS Ville,
                         ICE AS Ice
                     FROM CLIENT
                     WHERE SUPPRIME IS NULL OR SUPPRIME = 0
-                    ORDER BY NOM_CLIENT;";
+                    ORDER BY NomClient;";
 
                 var result = await connection.QueryAsync<ClientResponseDto>(sql);
                 return result.ToList();
@@ -67,10 +67,10 @@ public class LookupService : ILookupService
                 using var connection = CreateConnection();
                 string sql = @"
                     SELECT 
-                        ID_USER AS IdUser,
+                        IdUser AS IdUser,
                         NOM AS Nom,
                         PRENOM AS Prenom
-                    FROM UTILISATEUR
+                    FROM dbo.[USER]
                     WHERE SUPPRIME IS NULL OR SUPPRIME = 0
                     ORDER BY NOM;";
 
@@ -93,12 +93,12 @@ public class LookupService : ILookupService
                 using var connection = CreateConnection();
                 string sql = @"
                     SELECT 
-                        ID_FAMILLE_ARTICLE AS IdFamilleArticle,
-                        CODE_FAMILLE AS CodeFamille,
-                        LIBELLE_FAM_ARTICLE AS LibelleFamArticle
+                        IdFamilleArticle AS IdFamilleArticle,
+                        CodeFamille AS CodeFamille,
+                        LibelleFamArticle AS LibelleFamArticle
                     FROM FAMILLEARTICLE
                     WHERE SUPPRIME IS NULL OR SUPPRIME = 0
-                    ORDER BY LIBELLE_FAM_ARTICLE;";
+                    ORDER BY LibelleFamArticle;";
 
                 var result = await connection.QueryAsync<FamilleArticleResponseDto>(sql);
                 return result.ToList();
@@ -121,15 +121,15 @@ public class LookupService : ILookupService
                 using var connection = CreateConnection();
                 string sql = @"
                     SELECT 
-                        sf.ID_SOUS_FAMILLE AS IdSousFamille,
-                        sf.ID_FAMILLE_ARTICLE AS IdFamilleArticle,
-                        sf.LIBELLE_SOUS_FAMILLE AS LibelleSousFamille,
-                        f.LIBELLE_FAM_ARTICLE AS LibelleFamilleParente
+                        sf.IdSousFamille AS IdSousFamille,
+                        sf.IdFamilleArticle AS IdFamilleArticle,
+                        sf.LibelleSousFamille AS LibelleSousFamille,
+                        f.LibelleFamArticle AS LibelleFamilleParente
                     FROM SOUSFAMILLEARTICLE sf
-                    LEFT JOIN FAMILLEARTICLE f ON sf.ID_FAMILLE_ARTICLE = f.ID_FAMILLE_ARTICLE
+                    LEFT JOIN FAMILLEARTICLE f ON sf.IdFamilleArticle = f.IdFamilleArticle
                     WHERE (sf.SUPPRIMER IS NULL OR sf.SUPPRIMER = 0)
-                    AND (@idFamille IS NULL OR sf.ID_FAMILLE_ARTICLE = @idFamille)
-                    ORDER BY sf.LIBELLE_SOUS_FAMILLE;";
+                    AND (@idFamille IS NULL OR sf.IdFamilleArticle = @idFamille)
+                    ORDER BY sf.LibelleSousFamille;";
 
                 var result = await connection.QueryAsync<SousFamilleArticleResponseDto>(sql, new { idFamille });
                 return result.ToList();
