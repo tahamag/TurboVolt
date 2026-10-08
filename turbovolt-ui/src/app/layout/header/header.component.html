@@ -1,0 +1,17 @@
+<mat-toolbar color="primary">
+    <button mat-icon-button (click)="toggleSidenav.emit()">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <span>TurboVolt ERP</span>
+    <span class="spacer"></span>
+    <button mat-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+        <span>{{ user?.nom || 'Utilisateur' }}</span>
+    </button>
+    <mat-menu #userMenu="matMenu">
+        <button mat-menu-item (click)="onLogout()">
+            <mat-icon>exit_to_app</mat-icon>
+            <span>Déconnexion</span>
+        </button>
+    </mat-menu>
+</mat-toolbar>

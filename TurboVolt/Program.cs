@@ -8,7 +8,17 @@ using System.Reflection;
 using TurboVolt.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
-
+// 1. Déclaration de la politique CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 // 1. Initialisation de Mapster
 MapsterConfig.RegisterMappings();
 
@@ -52,20 +62,21 @@ try
     builder.Services.AddOpenApi();
     var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+    app.UseCors("AllowAngular");
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+        app.MapScalarApiReference();
+    }
 
-app.UseHttpsRedirection();
+    app.UseHttpsRedirection();
 
-app.UseAuthorization();
+    app.UseAuthorization();
 
-app.MapControllers();
+    app.MapControllers();
 
-app.Run();
+    app.Run();
 }
 catch (System.Reflection.ReflectionTypeLoadException ex)
 {
