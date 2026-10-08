@@ -5,6 +5,7 @@ using TurboVolt.Models;
 using TurboVolt.Services;
 using Scalar.AspNetCore;
 using System.Reflection;
+using TurboVolt.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +20,14 @@ builder.Services.AddHybridCache();
 // 3. Enregistrement automatique des validateurs FluentValidation
 //builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddValidatorsFromAssemblyContaining<TurboVolt.Validators.ArticleFilterValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<BreceptionFilterValidator>();
 
 // 4. Injections des services applicatifs
 builder.Services.AddScoped<IBlivraisonService, BlivraisonService>();
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<ILookupService, LookupService>();
-
+builder.Services.AddScoped<IBreceptionService, BreceptionService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 // Add services to the container.
 
 builder.Services.AddControllers();
