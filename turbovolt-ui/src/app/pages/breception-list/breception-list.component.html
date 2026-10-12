@@ -1,0 +1,162 @@
+<div class="page-container">
+    <mat-card class="filter-card">
+        <mat-card-header>
+            <mat-card-title>Bons de Réception (Achats & Entrées)</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <form [formGroup]="filterForm" (ngSubmit)="onSearch()" class="filter-grid">
+                <mat-form-field appearance="outline">
+                    <mat-label>Date Début</mat-label>
+                    <input matInput [matDatepicker]="pickerStart" formControlName="dateDebut">
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerStart></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Date Fin</mat-label>
+                    <input matInput [matDatepicker]="pickerEnd" formControlName="dateFin">
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerEnd></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Famille Article</mat-label>
+                    <mat-select formControlName="idFamille">
+                        <mat-option [value]="null">Toutes</mat-option>
+                        @for (f of familles; track f.idFamilleArticle) {
+                        <mat-option [value]="f.idFamilleArticle">{{ f.libelleFamArticle }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Réf Article (Ligne)</mat-label>
+                    <input matInput formControlName="refArticle">
+                </mat-form-field>
+
+                <div class="actions">
+                    <button mat-raised-button color="primary" type="submit">
+                        <mat-icon>search</mat-icon> Filtrer
+                    </button>
+                    <button mat-stroked-button type="button" (click)="onReset()">
+                        <mat-icon>refresh</mat-icon> Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+
+    <div class="table-container mat-elevation-z8">
+        @if (isLoading) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        <table mat-table [dataSource]="brList" multiTemplateDataRows>
+            <ng-container matColumnDef="noBl">
+                <th mat-header-cell *matHeaderCellDef>N° BL Fournisseur</th>
+                <td mat-cell *matCellDef="let element"><strong>{{ element.noBl || '-' }}</strong></td>
+            </ng-container>
+
+            <ng-container matColumnDef="dateCreation">
+                <th mat-header-cell *matHeaderCellDef>Date Création</th>
+                <td mat-cell *matCellDef="let element">{{ element.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="nomFournisseur">
+                <th mat-header-cell *matHeaderCellDef>Fournisseur</th>
+                <td mat-cell *matCellDef="let element">{{ element.nomFournisseur || 'N/A' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="nomDepot">
+                <th mat-header-cell *matHeaderCellDef>Dépôt</th>
+                <td mat-cell *matCellDef="let element">{{ element.nomDepot || 'N/A' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="totalBonReceptionHt">
+                <th mat-header-cell *matHeaderCellDef>Total HT</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalBonReceptionHt | currency:'MAD':'symbol':'1.2-2'
+                    }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="totalBonReceptionTtc">
+                <th mat-header-cell *matHeaderCellDef>Total TTC</th>
+                <td mat-cell *matCellDef="let element" class="price-ttc">
+                    {{ element.totalBonReceptionTtc | currency:'MAD':'symbol':'1.2-2' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="resteADonner">
+                <th mat-header-cell *matHeaderCellDef>Reste à Donner</th>
+                <td mat-cell *matCellDef="let element">{{ element.resteADonner | currency:'MAD':'symbol':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="agentCreateur">
+                <th mat-header-cell *matHeaderCellDef>Agent Créateur</th>
+                <td mat-cell *matCellDef="let element">
+                    {{ element.agentCreateur ? element.agentCreateur.nom + ' ' + element.agentCreateur.prenom : '-' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Détails</th>
+                <td mat-cell *matCellDef="let element">
+                    <button mat-icon-button color="accent" (click)="toggleExpand(element.idBonReception)">
+                        <mat-icon>{{ expandedBrId === element.idBonReception ? 'expand_less' : 'expand_more'
+                            }}</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+            <ng-container matColumnDef="expandedDetail">
+                <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+                    @if (expandedBrId === element.idBonReception) {
+                    <div class="articles-detail-box">
+                        <h4>Lignes d'Articles du BR #{{ element.noBl || element.idBonReception }}</h4>
+                        <table mat-table [dataSource]="element.lignesArticles" class="sub-table">
+                            <ng-container matColumnDef="refArticle">
+                                <th mat-header-cell *matHeaderCellDef>Réf</th>
+                                <td mat-cell *matCellDef="let line">{{ line.refArticle }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="designation">
+                                <th mat-header-cell *matHeaderCellDef>Désignation</th>
+                                <td mat-cell *matCellDef="let line">{{ line.designation }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="quantiteReceve">
+                                <th mat-header-cell *matHeaderCellDef>Qté Reçue</th>
+                                <td mat-cell *matCellDef="let line">{{ line.quantiteReceve }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="prixBonReception">
+                                <th mat-header-cell *matHeaderCellDef>Prix U. HT</th>
+                                <td mat-cell *matCellDef="let line">{{ line.prixBonReception | currency:'MAD' }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="tauxTva">
+                                <th mat-header-cell *matHeaderCellDef>TVA (%)</th>
+                                <td mat-cell *matCellDef="let line">{{ line.tauxTva }}%</td>
+                            </ng-container>
+                            <ng-container matColumnDef="montantHt">
+                                <th mat-header-cell *matHeaderCellDef>Montant HT</th>
+                                <td mat-cell *matCellDef="let line">{{ line.montantHt | currency:'MAD' }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="montantTtc">
+                                <th mat-header-cell *matHeaderCellDef>Montant TTC</th>
+                                <td mat-cell *matCellDef="let line">{{ line.montantTtc | currency:'MAD' }}</td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="articleColumns"></tr>
+                            <tr mat-row *matRowDef="let lineRow; columns: articleColumns;"></tr>
+                        </table>
+                    </div>
+                    }
+                </td>
+            </ng-container>
+        </table>
+
+        <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50]"
+            (page)="onPageChange($event)" showFirstLastButtons>
+        </mat-paginator>
+    </div>
+</div>

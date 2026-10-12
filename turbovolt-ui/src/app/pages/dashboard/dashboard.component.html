@@ -1,34 +1,46 @@
 <div class="dashboard-container">
-    <h2>Bienvenue, {{ user?.nom }} {{ user?.prenom }} 👋</h2>
+    <div class="header-title">
+        <h2>Tableau de Bord & Vue d'Ensemble</h2>
+        <p class="subtitle">Indicateurs clés issus des modules Ventes, Achats et Stock</p>
+    </div>
 
-    <div class="cards-grid">
-        <mat-card class="dash-card">
+    @if (isLoading) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    <div class="stats-grid">
+        <mat-card class="stat-card blue">
             <mat-card-header>
-                <mat-card-title>Bons de Réception</mat-card-title>
+                <mat-icon mat-card-avatar>inventory_2</mat-icon>
+                <mat-card-title>Articles en Catalogues</mat-card-title>
+                <mat-card-subtitle>Total Référencé</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                <p class="stat-number">12</p>
-                <p>En attente de traitement</p>
+                <p class="stat-value">{{ totalArticles }}</p>
             </mat-card-content>
         </mat-card>
 
-        <mat-card class="dash-card">
+        <mat-card class="stat-card green">
             <mat-card-header>
-                <mat-card-title>Articles Réceptionnés</mat-card-title>
+                <mat-icon mat-card-avatar>local_shipping</mat-icon>
+                <mat-card-title>Bons de Livraison (Ventes)</mat-card-title>
+                <mat-card-subtitle>Total Réalisé</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                <p class="stat-number">348</p>
-                <p>Ce mois-ci</p>
+                <p class="stat-value">{{ totalBl }}</p>
+                <p class="stat-sub">Vol. Échantillon TTC: {{ totalVentesTtc | currency:'MAD':'symbol':'1.2-2' }}</p>
             </mat-card-content>
         </mat-card>
 
-        <mat-card class="dash-card">
+        <mat-card class="stat-card purple">
             <mat-card-header>
-                <mat-card-title>Fournisseurs</mat-card-title>
+                <mat-icon mat-card-avatar>move_to_inbox</mat-icon>
+                <mat-card-title>Bons de Réception (Achats)</mat-card-title>
+                <mat-card-subtitle>Total Entrées</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                <p class="stat-number">24</p>
-                <p>Actifs</p>
+                <p class="stat-value">{{ totalBr }}</p>
+                <p class="stat-sub">Vol. Échantillon TTC: {{ totalAchatsTtc | currency:'MAD':'symbol':'1.2-2' }}</p>
             </mat-card-content>
         </mat-card>
     </div>

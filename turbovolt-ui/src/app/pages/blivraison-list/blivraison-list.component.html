@@ -1,0 +1,158 @@
+<div class="page-container">
+    <mat-card class="filter-card">
+        <mat-card-header>
+            <mat-card-title>Bons de Livraison (Ventes)</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <form [formGroup]="filterForm" (ngSubmit)="onSearch()" class="filter-grid">
+                <mat-form-field appearance="outline">
+                    <mat-label>Date Début</mat-label>
+                    <input matInput [matDatepicker]="pickerStart" formControlName="dateDebut">
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerStart></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Date Fin</mat-label>
+                    <input matInput [matDatepicker]="pickerEnd" formControlName="dateFin">
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerEnd></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Client</mat-label>
+                    <mat-select formControlName="idClient">
+                        <mat-option [value]="null">Tous</mat-option>
+                        @for (c of clients; track c.idClient) {
+                        <mat-option [value]="c.idClient">{{ c.nomClient }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Réf Article (Ligne)</mat-label>
+                    <input matInput formControlName="refArticle">
+                </mat-form-field>
+
+                <div class="actions">
+                    <button mat-raised-button color="primary" type="submit">
+                        <mat-icon>search</mat-icon> Filtrer
+                    </button>
+                    <button mat-stroked-button type="button" (click)="onReset()">
+                        <mat-icon>refresh</mat-icon> Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+
+    <div class="table-container mat-elevation-z8">
+        @if (isLoading) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        <table mat-table [dataSource]="blList" multiTemplateDataRows>
+            <ng-container matColumnDef="noBonLivraison">
+                <th mat-header-cell *matHeaderCellDef>N° BL</th>
+                <td mat-cell *matCellDef="let element"><strong>{{ element.noBonLivraison || '-' }}</strong></td>
+            </ng-container>
+
+            <ng-container matColumnDef="dateLivraison">
+                <th mat-header-cell *matHeaderCellDef>Date Livraison</th>
+                <td mat-cell *matCellDef="let element">{{ element.dateLivraison | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="nomClient">
+                <th mat-header-cell *matHeaderCellDef>Client</th>
+                <td mat-cell *matCellDef="let element">{{ element.nomClient || 'N/A' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="totalBonLivraisonHt">
+                <th mat-header-cell *matHeaderCellDef>Total HT</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalBonLivraisonHt | currency:'MAD':'symbol':'1.2-2'
+                    }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="totalBonLivraisonTtc">
+                <th mat-header-cell *matHeaderCellDef>Total TTC</th>
+                <td mat-cell *matCellDef="let element" class="price-ttc">
+                    {{ element.totalBonLivraisonTtc | currency:'MAD':'symbol':'1.2-2' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="resteAPayer">
+                <th mat-header-cell *matHeaderCellDef>Reste à Payer</th>
+                <td mat-cell *matCellDef="let element">{{ element.resteAPayer | currency:'MAD':'symbol':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="agentCreateur">
+                <th mat-header-cell *matHeaderCellDef>Créé par</th>
+                <td mat-cell *matCellDef="let element">
+                    {{ element.agentCreateur ? element.agentCreateur.nom + ' ' + element.agentCreateur.prenom : '-' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Détails</th>
+                <td mat-cell *matCellDef="let element">
+                    <button mat-icon-button color="accent" (click)="toggleExpand(element.idBonLivraison)">
+                        <mat-icon>{{ expandedBlId === element.idBonLivraison ? 'expand_less' : 'expand_more'
+                            }}</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- Lignes d'articles sous forme de sous-tableau -->
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+            <ng-container matColumnDef="expandedDetail">
+                <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+                    @if (expandedBlId === element.idBonLivraison) {
+                    <div class="articles-detail-box">
+                        <h4>Lignes d'Articles du BL #{{ element.noBonLivraison }}</h4>
+                        <table mat-table [dataSource]="element.bL_Articles" class="sub-table">
+                            <ng-container matColumnDef="refArticle">
+                                <th mat-header-cell *matHeaderCellDef>Réf</th>
+                                <td mat-cell *matCellDef="let line">{{ line.refArticle }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="designation">
+                                <th mat-header-cell *matHeaderCellDef>Désignation</th>
+                                <td mat-cell *matCellDef="let line">{{ line.designation }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="quantiteLivree">
+                                <th mat-header-cell *matHeaderCellDef>Qté Livrée</th>
+                                <td mat-cell *matCellDef="let line">{{ line.quantiteLivree }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="prixBonLivraison">
+                                <th mat-header-cell *matHeaderCellDef>Prix U. HT</th>
+                                <td mat-cell *matCellDef="let line">{{ line.prixBonLivraison | currency:'MAD' }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="tauxTva">
+                                <th mat-header-cell *matHeaderCellDef>TVA (%)</th>
+                                <td mat-cell *matCellDef="let line">{{ line.tauxTva }}%</td>
+                            </ng-container>
+                            <ng-container matColumnDef="montantHt">
+                                <th mat-header-cell *matHeaderCellDef>Montant HT</th>
+                                <td mat-cell *matCellDef="let line">{{ line.montantHt | currency:'MAD' }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="montantTtc">
+                                <th mat-header-cell *matHeaderCellDef>Montant TTC</th>
+                                <td mat-cell *matCellDef="let line">{{ line.montantTtc | currency:'MAD' }}</td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="articleColumns"></tr>
+                            <tr mat-row *matRowDef="let lineRow; columns: articleColumns;"></tr>
+                        </table>
+                    </div>
+                    }
+                </td>
+            </ng-container>
+        </table>
+
+        <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50]"
+            (page)="onPageChange($event)" showFirstLastButtons>
+        </mat-paginator>
+    </div>
+</div>

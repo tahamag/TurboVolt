@@ -1,17 +1,31 @@
-<mat-toolbar color="primary">
-    <button mat-icon-button (click)="toggleSidenav.emit()">
+<mat-toolbar color="primary" class="app-header">
+    <button mat-icon-button (click)="toggleSidenav.emit()" aria-label="Toggle Menu">
         <mat-icon>menu</mat-icon>
     </button>
-    <span>TurboVolt ERP</span>
+
+    <div class="brand">
+        <mat-icon class="brand-icon">bolt</mat-icon>
+        <span class="brand-title">TurboVolt WMS</span>
+    </div>
+
     <span class="spacer"></span>
-    <button mat-button [matMenuTriggerFor]="userMenu">
-        <mat-icon>account_circle</mat-icon>
-        <span>{{ user?.nom || 'Utilisateur' }}</span>
-    </button>
-    <mat-menu #userMenu="matMenu">
-        <button mat-menu-item (click)="onLogout()">
-            <mat-icon>exit_to_app</mat-icon>
-            <span>Déconnexion</span>
+
+    <div class="user-section">
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
+            <mat-icon>account_circle</mat-icon>
+            <span class="user-name">{{ user?.nom ? (user.nom + ' ' + (user.prenom || '')) : 'Utilisateur' }}</span>
+            <mat-icon>arrow_drop_down</mat-icon>
         </button>
-    </mat-menu>
+
+        <mat-menu #userMenu="matMenu" xPosition="before" class="user-menu">
+            <div class="menu-user-info">
+                <p class="menu-user-name">{{ user?.nom }} {{ user?.prenom }}</p>
+                <p class="menu-user-role">Agent connecté</p>
+            </div>
+            <button mat-menu-item (click)="onLogout()">
+                <mat-icon color="warn">exit_to_app</mat-icon>
+                <span>Se déconnecter</span>
+            </button>
+        </mat-menu>
+    </div>
 </mat-toolbar>

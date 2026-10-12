@@ -1,0 +1,35 @@
+.page-container {
+    padding: 24px;
+}
+
+.filter-card {
+    margin-bottom: 20px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+}
+
+.price-ttc {
+    font-weight: 600;
+    color: #2e7d32;
+}

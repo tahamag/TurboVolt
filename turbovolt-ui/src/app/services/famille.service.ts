@@ -1,0 +1,23 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { FamilleArticleResponseDto, SousFamilleArticleResponseDto } from '../models/wms.models';
+
+@Injectable({ providedIn: 'root' })
+export class FamilleService {
+  private http = inject(HttpClient);
+  private apiUrl = 'https://localhost:7108/api/Lookups';
+
+  getFamilles(): Observable<FamilleArticleResponseDto[]> {
+    console.log(this.http.get<FamilleArticleResponseDto[]>(`${this.apiUrl}/familles`))
+    return this.http.get<FamilleArticleResponseDto[]>(`${this.apiUrl}/familles`);
+  }
+
+  getSousFamilles(idFamille?: number): Observable<SousFamilleArticleResponseDto[]> {
+    let params = new HttpParams();
+    if (idFamille) {
+      params = params.set('idFamille', idFamille.toString());
+    }
+    return this.http.get<SousFamilleArticleResponseDto[]>(`${this.apiUrl}/sous-familles`, { params });
+  }
+}
