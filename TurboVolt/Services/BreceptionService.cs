@@ -52,8 +52,8 @@ public class BreceptionService : IBreceptionService
                     br.Iddepot AS IdDepot,
                     
                     -- User Créateur (u1) avec alias uniques
-                    u1.IdUser AS IdUserCreateur, 
-                    u1.NOM AS NomCreateur, 
+                    u1.IdUser AS IdUser, 
+                    u1.NOM AS Nom, 
                     u1.PRENOM AS PrenomCreateur,
                     
                     -- User Modificateur (u2) avec alias uniques
@@ -107,7 +107,7 @@ public class BreceptionService : IBreceptionService
                 br.AgentModificateur = modificateur;
                 return br;
             },
-            splitOn: "IdUserCreateur,IdUserModificateur"
+            splitOn: "IdUser,IdUserModificateur"
         ).ToList();
 
         // Chargement différé des lignes d'articles pour les éléments affichés
@@ -178,7 +178,7 @@ public class BreceptionService : IBreceptionService
             br.Iddepot AS IdDepot,
             d.NomDepot AS NomDepot,
             
-            u1.IdUser AS IdUserCreateur, u1.NOM AS NomCreateur, u1.PRENOM AS PrenomCreateur,
+            u1.IdUser AS IdUser, u1.NOM AS NomCreateur, u1.PRENOM AS PrenomCreateur,
             u2.IdUser AS IdUserModificateur, u2.NOM AS NomModificateur, u2.PRENOM AS PrenomModificateur
         FROM BRECEPTION br
         LEFT JOIN FOURNISSEUR f ON br.IdFournisseur = f.IdFournisseur
@@ -220,7 +220,7 @@ public class BreceptionService : IBreceptionService
                 b.AgentModificateur = modificateur;
                 return b;
             },
-            splitOn: "IdUserCreateur,IdUserModificateur"
+            splitOn: "IdUser,IdUserModificateur"
         ).FirstOrDefault();
 
         if (br != null)

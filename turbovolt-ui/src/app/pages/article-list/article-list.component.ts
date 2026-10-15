@@ -60,7 +60,6 @@ export class ArticleListComponent implements OnInit {
 
   displayedColumns: string[] = [
     'refArticle',
-    'numArticle',
     'designation',
     'libelleFamille',
     'libelleSousFamille',
