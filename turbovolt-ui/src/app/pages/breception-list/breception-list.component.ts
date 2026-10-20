@@ -61,7 +61,6 @@ export class BreceptionListComponent implements OnInit {
     'noBl',
     'dateCreation',
     'nomFournisseur',
-    'nomDepot',
     'totalBonReceptionHt',
     'totalBonReceptionTtc',
     'resteADonner',

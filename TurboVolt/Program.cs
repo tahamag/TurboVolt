@@ -38,6 +38,7 @@ builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<ILookupService, LookupService>();
 builder.Services.AddScoped<IBreceptionService, BreceptionService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IBeneficeService, BeneficeService>();
 // Add services to the container.
 
 builder.Services.AddControllers();

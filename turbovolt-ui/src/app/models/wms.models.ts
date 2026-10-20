@@ -160,3 +160,18 @@ export interface BreceptionResponseDto {
     agentModificateur?: UserResponseDto;
     lignesArticles: BreceptionXArticleResponseDto[];
 }
+
+export interface BeneficeResponseDto {
+    refBonLivraison?: string;
+    dateHeureVente?: string;
+    nom?: string;
+    idArticle: number;
+    refArticle?: string;
+    designationArticle?: string;
+    quantiteLivree?: number;
+    prixVenteUnitaireHt?: number;
+    montantTotalVenteHt?: number;
+    prixAchatUnitaireHt?: number;
+    refBonReceptionInterne?: string;
+    beneficeHt?: number;
+}

@@ -1,0 +1,145 @@
+<div class="page-container">
+
+    <!-- Carte des Totaux -->
+    <div class="kpi-container">
+        <mat-card class="kpi-card vente">
+            <mat-card-content>
+                <span class="kpi-title">Total Ventes (HT)</span>
+                <span class="kpi-value ">{{ totalVenteHt | number:'1.2-2' }} DH</span>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="kpi-card achat">
+            <mat-card-content>
+                <span class="kpi-title">Total Achats (HT)</span>
+                <span class="kpi-value">{{ totalAchatHt | number:'1.2-2' }} DH</span>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="kpi-card benefice">
+            <mat-card-content>
+                <span class="kpi-title">Total Bénéfices (HT)</span>
+                <span class="kpi-value highlight">{{ totalBeneficeHt |number:'1.2-2' }} DH</span>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <!-- Carte des Filtres -->
+    <mat-card class="filter-card">
+        <mat-card-header>
+            <mat-card-title>Analyse des Bénéfices et Marges</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <form [formGroup]="filterForm" (ngSubmit)="onSearch()" class="filter-grid">
+
+                <!-- Filtre Utilisateur -->
+                <mat-form-field appearance="outline">
+                    <mat-label>Utilisateur / Agent</mat-label>
+                    <mat-select formControlName="idUser">
+                        <mat-option [value]="null">Tous les utilisateurs</mat-option>
+                        @for (u of users; track u.idUser) {
+                        <mat-option [value]="u.idUser">{{ u.nom }} {{ u.prenom }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+
+                <!-- Date Début -->
+                <mat-form-field appearance="outline">
+                    <mat-label>Date Début</mat-label>
+                    <input matInput [matDatepicker]="pickerDebut" formControlName="dateDebut">
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerDebut"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerDebut></mat-datepicker>
+                </mat-form-field>
+
+                <!-- Date Fin -->
+                <mat-form-field appearance="outline">
+                    <mat-label>Date Fin</mat-label>
+                    <input matInput [matDatepicker]="pickerFin" formControlName="dateFin">
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerFin></mat-datepicker>
+                </mat-form-field>
+
+                <!-- Boutons -->
+                <div class="actions">
+                    <button mat-raised-button color="primary" type="submit">
+                        <mat-icon>search</mat-icon> Filtrer
+                    </button>
+                    <button mat-stroked-button type="button" (click)="onReset()">
+                        <mat-icon>refresh</mat-icon> Réinitialiser
+                    </button>
+                </div>
+
+            </form>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Tableau des Résultats -->
+    <div class="table-container mat-elevation-z8">
+        @if (isLoading) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        <table mat-table [dataSource]="benefices">
+
+            <ng-container matColumnDef="refBonLivraison">
+                <th mat-header-cell *matHeaderCellDef>N° BL</th>
+                <td mat-cell *matCellDef="let element"><strong>{{ element.refBonLivraison }}</strong></td>
+            </ng-container>
+
+            <ng-container matColumnDef="dateHeureVente">
+                <th mat-header-cell *matHeaderCellDef>Date Vente</th>
+                <td mat-cell *matCellDef="let element">{{ element.dateHeureVente | date:'dd/MM/yyyy HH:mm' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="nom">
+                <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+                <td mat-cell *matCellDef="let element">{{ element.nom || '-' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="refArticle">
+                <th mat-header-cell *matHeaderCellDef>Réf Article</th>
+                <td mat-cell *matCellDef="let element">{{ element.refArticle }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="designationArticle">
+                <th mat-header-cell *matHeaderCellDef>Désignation</th>
+                <td mat-cell *matCellDef="let element">{{ element.designationArticle }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="quantiteLivree">
+                <th mat-header-cell *matHeaderCellDef>Qté</th>
+                <td mat-cell *matCellDef="let element">{{ element.quantiteLivree }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="prixVenteUnitaireHt">
+                <th mat-header-cell *matHeaderCellDef>P.Vente U. (HT)</th>
+                <td mat-cell *matCellDef="let element">{{ element.prixVenteUnitaireHt | number:'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="montantTotalVenteHt">
+                <th mat-header-cell *matHeaderCellDef>Total Vente (HT)</th>
+                <td mat-cell *matCellDef="let element">{{ element.montantTotalVenteHt | number:'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="prixAchatUnitaireHt">
+                <th mat-header-cell *matHeaderCellDef>P.Achat U. (HT)</th>
+                <td mat-cell *matCellDef="let element">{{ element.prixAchatUnitaireHt | number:'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="refBonReceptionInterne">
+                <th mat-header-cell *matHeaderCellDef>Réf Réception Achat</th>
+                <td mat-cell *matCellDef="let element">{{ element.refBonReceptionInterne || 'N/A' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="beneficeHt">
+                <th mat-header-cell *matHeaderCellDef>Bénéfice (HT)</th>
+                <td mat-cell *matCellDef="let element" class="benefice-cell">
+                    {{ element.beneficeHt | number:'1.2-2'  }}
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+    </div>
+</div>

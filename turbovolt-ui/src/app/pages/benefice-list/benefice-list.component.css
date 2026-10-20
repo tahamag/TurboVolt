@@ -1,0 +1,80 @@
+.page-container {
+    padding: 24px;
+}
+
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.kpi-card {
+    border-left: 5px solid #3f51b5;
+}
+
+.kpi-card.vente {
+    border-left-color: #2196f3;
+}
+
+.kpi-card.achat {
+    border-left-color: #ff9800;
+}
+
+.kpi-card.benefice {
+    border-left-color: #4caf50;
+}
+
+.kpi-title {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.kpi-value {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.kpi-value.highlight {
+    color: #2e7d32;
+}
+
+.filter-card {
+    margin-bottom: 20px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+}
+
+.benefice-cell {
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+.kpi-value.right-value {
+    display: block;
+    text-align: right;
+    width: 100%;
+}
