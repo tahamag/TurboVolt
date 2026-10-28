@@ -15,62 +15,82 @@ public partial class AppDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Famillearticle> Famillearticle { get; set; }
+    public virtual DbSet<Avoirclient> Avoirclient { get; set; }
 
-    public virtual DbSet<Sousfamillearticle> Sousfamillearticle { get; set; }
+    public virtual DbSet<AvoirclientXArticle> AvoirclientXArticle { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Famillearticle>(entity =>
+        modelBuilder.Entity<Avoirclient>(entity =>
         {
-            entity.HasKey(e => e.IdFamilleArticle).HasName("PK_FAMARTICLE");
+            entity.HasKey(e => e.IdAvoirClient).HasName("PK_AVOIR");
 
-            entity.ToTable("FAMILLEARTICLE");
+            entity.ToTable("AVOIRCLIENT");
 
-            entity.Property(e => e.CodeFamille).HasMaxLength(50);
+            entity.Property(e => e.CodeAvoir).HasMaxLength(250);
             entity.Property(e => e.DateCreation)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.DateCreationAuto)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.DateModification).HasColumnType("datetime");
-            entity.Property(e => e.Description).HasMaxLength(100);
-            entity.Property(e => e.DescriptionAr)
-                .HasMaxLength(100)
-                .HasColumnName("DescriptionAR");
-            entity.Property(e => e.Icon).HasMaxLength(50);
-            entity.Property(e => e.Image).HasColumnType("image");
-            entity.Property(e => e.IndexHome).HasColumnName("indexHome");
-            entity.Property(e => e.IsCarreaux).HasDefaultValue(0);
-            entity.Property(e => e.LibelleFamArticle).HasMaxLength(100);
-            entity.Property(e => e.LibelleFamArticleAr)
-                .HasMaxLength(100)
-                .HasColumnName("LibelleFamArticleAR");
-            entity.Property(e => e.PrixParUnite).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.IdbonLivraison).HasColumnName("IDBonLivraison");
+            entity.Property(e => e.Idmagasin).HasColumnName("IDMagasin");
+            entity.Property(e => e.Idtype).HasColumnName("IDType");
+            entity.Property(e => e.IsReported).HasColumnType("datetime");
+            entity.Property(e => e.NomClient).HasMaxLength(256);
+            entity.Property(e => e.Remarques).HasMaxLength(1000);
+            entity.Property(e => e.ResteADonner)
+                .HasColumnType("decimal(24, 2)")
+                .HasColumnName("Reste_A_Donner");
             entity.Property(e => e.Supprime).HasDefaultValue(false);
+            entity.Property(e => e.TotalTtc)
+                .HasColumnType("decimal(24, 2)")
+                .HasColumnName("TotalTTC");
+            entity.Property(e => e.TotatHt)
+                .HasColumnType("decimal(24, 2)")
+                .HasColumnName("TotatHT");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
         });
 
-        modelBuilder.Entity<Sousfamillearticle>(entity =>
+        modelBuilder.Entity<AvoirclientXArticle>(entity =>
         {
-            entity.HasKey(e => e.IdSousFamille);
+            entity.HasKey(e => e.Id).HasName("PK_AVOIRCLIENT-X-ARTICLE");
 
-            entity.ToTable("SOUSFAMILLEARTICLE");
+            entity.ToTable("AVOIRCLIENT_X_ARTICLE", tb =>
+                {
+                    tb.HasTrigger("TRG_DELETE_ARTICLE_AVOIR_CLIENT");
+                    tb.HasTrigger("TRG_DELETE_ARTICLE_AVOIR_CLIENT_BASE_BL");
+                    tb.HasTrigger("TRG_INSERT_ARTICLE_AVOIR_CLIENT");
+                    tb.HasTrigger("TRG_INSERT_ARTICLE_AVOIR_CLIENT_BASE_BL");
+                    tb.HasTrigger("TRG_INSERT_UPDATE_AVOIR_CLIENT");
+                    tb.HasTrigger("TRG_UPDATE_ARTICLE_AVOIR_CLIENT_BASE_BL");
+                });
 
-            entity.Property(e => e.DateCreation)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.DateModification).HasColumnType("datetime");
-            entity.Property(e => e.Description).HasMaxLength(100);
-            entity.Property(e => e.DescriptionAr)
-                .HasMaxLength(100)
-                .HasColumnName("DescriptionAR");
-            entity.Property(e => e.Icon).HasMaxLength(50);
-            entity.Property(e => e.Image).HasColumnType("image");
-            entity.Property(e => e.LibelleSousFamille).HasMaxLength(100);
-            entity.Property(e => e.LibelleSousFamilleAr)
-                .HasMaxLength(100)
-                .HasColumnName("LibelleSousFamilleAR");
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Designation).HasMaxLength(4000);
+            entity.Property(e => e.IdLineBl).HasColumnName("IdLineBL");
+            entity.Property(e => e.Iddepot).HasColumnName("IDDepot");
+            entity.Property(e => e.PrixAvoir).HasColumnType("money");
+            entity.Property(e => e.PrixAvoirTtc)
+                .HasColumnType("money")
+                .HasColumnName("PrixAvoirTTC");
+            entity.Property(e => e.QteColis).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.QteParColis).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.QuantiteReparer)
+                .HasDefaultValue(0m)
+                .HasColumnType("decimal(24, 3)");
+            entity.Property(e => e.Supprime).HasDefaultValue(false);
+            entity.Property(e => e.Tva).HasColumnName("TVA");
+
+            entity.HasOne(d => d.IdAvoirClientNavigation).WithMany(p => p.AvoirclientXArticle)
+                .HasForeignKey(d => d.IdAvoirClient)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AVOIR_X_ASSOCIATI_AVOIR");
         });
 
         OnModelCreatingPartial(modelBuilder);

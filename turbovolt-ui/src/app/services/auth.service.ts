@@ -2,6 +2,7 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,8 @@ import { Observable, tap } from 'rxjs';
 export class AuthService {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
-  private apiUrl = 'https://localhost:7108/api/Auth';
+  
+  private apiUrl = `${environment.apiUrl}/Auth`;
 
   private isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);

@@ -18,4 +18,18 @@
         public string? RefBonReceptionInterne { get; set; }
         public decimal? BeneficeHt { get; set; }
     }
+    public class UserBenificeDto
+    {
+        public int UserId { get; set; }
+        public string? UserName { get; set; }
+
+        // Somme des bénéfices générés par les Bons de Livraison (BL) de cet utilisateur
+        public decimal BenificeBl { get; set; }
+
+        // Somme des bénéfices/valeurs restituées par les Avoirs (déduits/impactés par article)
+        public decimal BenificeAvoir { get; set; }
+
+        // Bénéfice Réel Net = BenificeBl - BenificeAvoir
+        public decimal BenificeReal { get; set; }
+    }
 }
