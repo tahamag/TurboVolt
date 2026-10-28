@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BeneficeResponseDto } from '../models/wms.models';
+import { environment } from '../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class BeneficeService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7108/api/Benefices';
+  private apiUrl = `${environment.apiUrl}/Benefices`;
 
   getBenefices(idUser?: number, dateDebut?: string, dateFin?: string): Observable<BeneficeResponseDto[]> {
     let params = new HttpParams();

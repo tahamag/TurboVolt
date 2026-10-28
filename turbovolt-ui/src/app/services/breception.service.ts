@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BreceptionFilterDto, BreceptionResponseDto, PagedResult } from '../models/wms.models';
+import { environment } from '../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class BreceptionService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7108/api/Breceptions';
+  private apiUrl = `${environment.apiUrl}/Breceptions`;
 
   getBreceptions(filter: BreceptionFilterDto): Observable<PagedResult<BreceptionResponseDto>> {
     let params = new HttpParams()

@@ -2,11 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ArticleFilterDto, ArticleResponseDto, PagedResult } from '../models/wms.models';
+import { environment } from '../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ArticleService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7108/api/Articles';
+  
+  private apiUrl = `${environment.apiUrl}/Articles`;
 
   getArticles(filter: ArticleFilterDto): Observable<PagedResult<ArticleResponseDto>> {
     let params = new HttpParams()

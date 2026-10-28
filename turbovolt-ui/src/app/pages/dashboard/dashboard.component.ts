@@ -32,20 +32,20 @@ export class DashboardComponent implements OnInit {
 
   loadStats(): void {
     this.isLoading = true;
-/*
-    this.articleService.getArticlesPaged({ pageNumber: 1, pageSize: 1 }).subscribe(res => {
+
+    this.articleService.getArticles({ pageNumber: 1, pageSize: 1 }).subscribe(res => {
       this.totalArticles = res.totalCount;
     });
 
-    this.blService.getBlivraisonsPaged({ pageNumber: 1, pageSize: 10 }).subscribe(res => {
+    this.blService.getBlivraisons({ pageNumber: 1, pageSize: 10 }).subscribe(res => {
       this.totalBl = res.totalCount;
       this.totalVentesTtc = res.items.reduce((sum, item) => sum + (item.totalBonLivraisonTtc || 0), 0);
     });
 
-    this.brService.getBreceptionsPaged({ pageNumber: 1, pageSize: 10 }).subscribe(res => {
+    this.brService.getBreceptions({ pageNumber: 1, pageSize: 10 }).subscribe(res => {
       this.totalBr = res.totalCount;
       this.totalAchatsTtc = res.items.reduce((sum, item) => sum + (item.totalBonReceptionTtc || 0), 0);
       this.isLoading = false;
-    });*/
+    });
   }
 }

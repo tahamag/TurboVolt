@@ -7,11 +7,12 @@ import {
   SousFamilleArticleResponseDto,
   UserResponseDto
 } from '../models/wms.models';
+import { environment } from '../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class LookupService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7108/api/Lookups';
+  private apiUrl = `${environment.apiUrl}/Lookups`;
 
   getClients(): Observable<ClientResponseDto[]> {
     return this.http.get<ClientResponseDto[]>(`${this.apiUrl}/clients`);

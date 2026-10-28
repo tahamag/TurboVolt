@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FamilleArticleResponseDto, SousFamilleArticleResponseDto } from '../models/wms.models';
+import { environment } from '../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class FamilleService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7108/api/Lookups';
+  private apiUrl = `${environment.apiUrl}/Lookups`;
 
   getFamilles(): Observable<FamilleArticleResponseDto[]> {
     console.log(this.http.get<FamilleArticleResponseDto[]>(`${this.apiUrl}/familles`))

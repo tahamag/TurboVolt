@@ -3,10 +3,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BlivraisonFilterDto, BlivraisonResponseDto, PagedResult } from '../models/wms.models';
 
+import { environment } from '../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class BlivraisonService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7108/api/Blivraisons';
+  private apiUrl = `${environment.apiUrl}/Blivraisons`;
 
   getBlivraisons(filter: BlivraisonFilterDto): Observable<PagedResult<BlivraisonResponseDto>> {
     let params = new HttpParams()
