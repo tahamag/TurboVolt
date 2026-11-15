@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using TurboVolt.Mappings;
-using TurboVolt.Models;
+using TurboVolt.Models; 
 using TurboVolt.Services;
 using Scalar.AspNetCore;
 using System.Reflection;
