@@ -34,4 +34,27 @@ namespace TurboVolt.DTOs
         public decimal? QteColis { get; set; }
         public decimal? QteParColis { get; set; }
     }
+    public class AvoirBenificeDetailDto
+    {
+        public string? CodeAvoir { get; set; }
+        public string? NomClient { get; set; }
+        public DateTime? DateCreation { get; set; }
+        public string? ReferenceArticle { get; set; }
+        public string? UserName { get; set; }
+        public double QuantiteRetournee { get; set; }
+        public decimal PrixAvoir { get; set; }
+        public int BlMatchCount { get; set; }
+        public decimal BenificeAvoirCalculated { get; set; }
+        public string? MethodeCalcul { get; set; }
+    }
+    public class AvoirBenificeByUserDto
+    {
+        public int UserId { get; set; }
+        public string? UserName { get; set; }
+        public int NombreAvoirs { get; set; }
+        public int NombreLignes { get; set; }
+        public int LignesCalculeesParBL { get; set; }
+        public int LignesCalculeesParPMP { get; set; }
+        public decimal TotalBenificeAvoirCalculated { get; set; }
+    }
 }

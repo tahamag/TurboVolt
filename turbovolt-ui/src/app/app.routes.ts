@@ -7,6 +7,7 @@ import { BlivraisonListComponent } from './pages/blivraison-list/blivraison-list
 import { BreceptionListComponent } from './pages/breception-list/breception-list.component';
 import { BeneficeListComponent } from './pages/benefice-list/benefice-list.component';
 import { authGuard } from './guards/auth.guard';
+import { AvoirBenificeComponent } from './pages/avoir-benifice/avoir-benifice.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -20,6 +21,7 @@ export const routes: Routes = [
             { path: 'blivraisons', component: BlivraisonListComponent },
             { path: 'breceptions', component: BreceptionListComponent },
             { path: 'benefices', component: BeneficeListComponent },
+            { path: 'avoir-benifice', component: AvoirBenificeComponent },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },

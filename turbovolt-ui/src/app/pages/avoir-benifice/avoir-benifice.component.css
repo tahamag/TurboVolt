@@ -1,0 +1,166 @@
+.page-wrapper {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #f8fafc;
+    min-height: 100%;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.page-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.kpi-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 20px;
+}
+
+.kpi-content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.kpi-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: #1976d2;
+}
+
+.kpi-label {
+    font-size: 12px;
+    color: #64748b;
+    display: block;
+}
+
+.kpi-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.kpi-value small {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.filter-card,
+.table-card {
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.filter-actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+mat-card-header {
+    padding: 16px 20px 8px;
+}
+
+mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+}
+
+.table-container {
+    overflow-x: auto;
+    padding: 0 !important;
+}
+
+.full-width-table {
+    width: 100%;
+    min-width: 720px;
+}
+
+.num-col {
+    text-align: right !important;
+}
+
+.amount-col {
+    font-weight: 600;
+    color: #15803d;
+}
+
+.amount-col.negative {
+    color: #dc2626;
+}
+
+.pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    max-width: 280px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pill-bl {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.pill-pmp {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.empty-cell {
+    text-align: center;
+    padding: 24px;
+    color: #64748b;
+}
+
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background-color: #fee2e2;
+    color: #991b1b;
+    font-size: 14px;
+}

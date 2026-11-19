@@ -175,3 +175,33 @@ export interface BeneficeResponseDto {
     refBonReceptionInterne?: string;
     beneficeHt?: number;
 }
+export interface AvoirBenificeDetail {
+    codeAvoir?: string;
+    nomClient?: string;
+    dateCreation?: string;
+    referenceArticle?: string;
+    userName?: string;
+    quantiteRetournee: number;
+    prixAvoir: number;
+    blMatchCount: number;
+    benificeAvoirCalculated: number;
+    methodeCalcul?: string;
+}
+
+export interface AvoirBenificeByUser {
+    userId: number;
+    userName?: string;
+    nombreAvoirs: number;
+    nombreLignes: number;
+    lignesCalculeesParBL: number;
+    lignesCalculeesParPMP: number;
+    totalBenificeAvoirCalculated: number;
+}
+
+export interface AvoirBenificeFilter {
+    userId?: number | null;
+    articleId?: number | null;
+    articleSearch?: string;
+    dateDebut?: string;
+    dateFin?: string;
+}

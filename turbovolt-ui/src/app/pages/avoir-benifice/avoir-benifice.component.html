@@ -1,0 +1,229 @@
+<div class="page-wrapper">
+    <!-- En-tête de page + KPI principal -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Bénéfices sur Avoirs</h1>
+            <p class="page-subtitle">
+                Calcul par article (BL unique sur 3 mois ou PMP Réception) avec filtrage multi-critères
+            </p>
+        </div>
+
+        <mat-card class="kpi-card" appearance="outlined">
+            <div class="kpi-content">
+                <mat-icon class="kpi-icon">payments</mat-icon>
+                <div>
+                    <span class="kpi-label">Total Bénéfice Avoirs</span>
+                    <div class="kpi-value">
+                        {{ totalGlobalBenificeAvoir | number : '1.2-2' }} <small>DH</small>
+                    </div>
+                </div>
+            </div>
+        </mat-card>
+    </div>
+
+    <!-- Carte Filtres -->
+    <mat-card class="filter-card" appearance="outlined">
+        <mat-card-content>
+            <div class="filters-grid">
+                <mat-form-field appearance="outline">
+                    <mat-label>Utilisateur</mat-label>
+                    <mat-icon matPrefix>person</mat-icon>
+                    <mat-select [(ngModel)]="filter.userId" (selectionChange)="search()">
+                    <mat-option [value]="null">Tous les utilisateurs</mat-option>
+                    <mat-option *ngFor="let u of users" [value]="u.idUser ?? u.id">
+                        {{ u.nom ?? u.userName ?? ('Utilisateur #' + (u.idUser ?? u.id)) }}
+                    </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <!-- Article -->
+                <mat-form-field appearance="outline">
+                    <mat-label>Article (Réf. / Désignation)</mat-label>
+                    <mat-icon matPrefix>inventory_2</mat-icon>
+                    <input matInput type="text" [(ngModel)]="filter.articleSearch" placeholder="Ex: REF-001..."
+                        (keyup.enter)="search()" />
+                    <button *ngIf="filter.articleSearch" matSuffix mat-icon-button
+                        (click)="filter.articleSearch = ''; search()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
+
+                <!-- Date Début -->
+                <mat-form-field appearance="outline">
+                    <mat-label>Date début</mat-label>
+                    <input matInput [matDatepicker]="pickerDebut" [(ngModel)]="startDateObj" />
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerDebut"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerDebut></mat-datepicker>
+                </mat-form-field>
+
+                <!-- Date Fin -->
+                <mat-form-field appearance="outline">
+                    <mat-label>Date fin</mat-label>
+                    <input matInput [matDatepicker]="pickerFin" [(ngModel)]="endDateObj" />
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerFin></mat-datepicker>
+                </mat-form-field>
+            </div>
+
+            <div class="filter-actions">
+                <button mat-stroked-button type="button" (click)="resetFilters()" [disabled]="loading">
+                    <mat-icon>restart_alt</mat-icon>
+                    Réinitialiser
+                </button>
+
+                <button mat-flat-button color="primary" type="button" (click)="search()" [disabled]="loading">
+                    <mat-icon>search</mat-icon>
+                    Rechercher
+                </button>
+            </div>
+        </mat-card-content>
+
+        <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    </mat-card>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="errorMessage" class="error-banner">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Tableau 1 : Synthèse par Utilisateur -->
+    <mat-card class="table-card" appearance="outlined">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>group</mat-icon>
+                Synthèse par Utilisateur
+            </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content class="table-container">
+            <table mat-table [dataSource]="summaryByUser" class="full-width-table">
+                <ng-container matColumnDef="userName">
+                    <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+                    <td mat-cell *matCellDef="let row">
+                        <strong>{{ row.userName || ('Utilisateur #' + row.userId) }}</strong>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="nombreAvoirs">
+                    <th mat-header-cell *matHeaderCellDef class="num-col">Nb Avoirs</th>
+                    <td mat-cell *matCellDef="let row" class="num-col">{{ row.nombreAvoirs }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="nombreLignes">
+                    <th mat-header-cell *matHeaderCellDef class="num-col">Nb Lignes</th>
+                    <td mat-cell *matCellDef="let row" class="num-col">{{ row.nombreLignes }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="lignesCalculeesParBL">
+                    <th mat-header-cell *matHeaderCellDef class="num-col">Via BL (3 mois)</th>
+                    <td mat-cell *matCellDef="let row" class="num-col">
+                        <span class="pill pill-bl">{{ row.lignesCalculeesParBL }}</span>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="lignesCalculeesParPMP">
+                    <th mat-header-cell *matHeaderCellDef class="num-col">Via PMP (BR)</th>
+                    <td mat-cell *matCellDef="let row" class="num-col">
+                        <span class="pill pill-pmp">{{ row.lignesCalculeesParPMP }}</span>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="totalBenificeAvoirCalculated">
+                    <th mat-header-cell *matHeaderCellDef class="num-col">Total Bénéfice Avoir</th>
+                    <td mat-cell *matCellDef="let row" class="num-col amount-col"
+                        [class.negative]="row.totalBenificeAvoirCalculated < 0">
+                        {{ row.totalBenificeAvoirCalculated | number : '1.2-2' }} DH
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="summaryColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: summaryColumns"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="empty-cell" [attr.colspan]="summaryColumns.length">
+                        Aucune synthèse disponible pour les filtres sélectionnés.
+                    </td>
+                </tr>
+            </table>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Tableau 2 : Détail par Ligne -->
+    <mat-card class="table-card" appearance="outlined">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>receipt_long</mat-icon>
+                Détail des Lignes d'Avoir ({{ details.length }})
+            </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content class="table-container">
+            <table mat-table [dataSource]="details" class="full-width-table">
+                <ng-container matColumnDef="codeAvoir">
+                    <th mat-header-cell *matHeaderCellDef>Code Avoir</th>
+                    <td mat-cell *matCellDef="let row"><strong>{{ row.codeAvoir }}</strong></td>
+                </ng-container>
+
+                <ng-container matColumnDef="dateCreation">
+                    <th mat-header-cell *matHeaderCellDef>Date</th>
+                    <td mat-cell *matCellDef="let row">{{ row.dateCreation | date : 'dd/MM/yyyy' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="nomClient">
+                    <th mat-header-cell *matHeaderCellDef>Client</th>
+                    <td mat-cell *matCellDef="let row">{{ row.nomClient }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="userName">
+                    <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+                    <td mat-cell *matCellDef="let row">{{ row.userName }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="referenceArticle">
+                    <th mat-header-cell *matHeaderCellDef>Réf. Article</th>
+                    <td mat-cell *matCellDef="let row">{{ row.referenceArticle }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="quantiteRetournee">
+                    <th mat-header-cell *matHeaderCellDef class="num-col">Qté</th>
+                    <td mat-cell *matCellDef="let row" class="num-col">{{ row.quantiteRetournee }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="prixAvoir">
+                    <th mat-header-cell *matHeaderCellDef class="num-col">Prix Avoir</th>
+                    <td mat-cell *matCellDef="let row" class="num-col">
+                        {{ row.prixAvoir | number : '1.2-2' }}
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="benificeAvoirCalculated">
+                    <th mat-header-cell *matHeaderCellDef class="num-col">Bénéfice Calculé</th>
+                    <td mat-cell *matCellDef="let row" class="num-col amount-col"
+                        [class.negative]="row.benificeAvoirCalculated < 0">
+                        {{ row.benificeAvoirCalculated | number : '1.2-2' }} DH
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="methodeCalcul">
+                    <th mat-header-cell *matHeaderCellDef>Méthode / Source</th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="pill" [ngClass]="row.blMatchCount === 1 ? 'pill-bl' : 'pill-pmp'"
+                            [matTooltip]="row.methodeCalcul || ''">
+                            {{ row.methodeCalcul }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="detailColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: detailColumns"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="empty-cell" [attr.colspan]="detailColumns.length">
+                        Aucune ligne d'avoir trouvée.
+                    </td>
+                </tr>
+            </table>
+        </mat-card-content>
+    </mat-card>
+</div>
