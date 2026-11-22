@@ -205,3 +205,11 @@ export interface AvoirBenificeFilter {
     dateDebut?: string;
     dateFin?: string;
 }
+
+export interface BenificeDifferenceByUser {
+    userId: number;
+    userName?: string;
+    globalBlBenifice: number;
+    globalAvoirBenifice: number;
+    differenceBenifice: number;
+}

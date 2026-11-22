@@ -11,8 +11,14 @@ namespace TurboVolt.Services
             int? articleId = null, 
             string? articleSearch = null,
             DateTime? dateDebut = null, 
-            DateTime? dateFin = null);
+            DateTime? dateFin = null); 
         Task<List<AvoirBenificeByUserDto>> GetAvoirBenificeByUserAsync(
+            int? idUser = null,
+            int? articleId = null,
+            string? articleSearch = null,
+            DateTime? dateDebut = null,
+            DateTime? dateFin = null);
+        Task<List<BenificeDifferenceByUserDto>> GetBenificeDifferenceByUserAsync(
             int? idUser = null,
             int? articleId = null,
             string? articleSearch = null,
@@ -255,6 +261,139 @@ namespace TurboVolt.Services
             using var connection = new SqlConnection(_connectionString);
             var rows = await connection.QueryAsync<AvoirBenificeByUserDto>(
                 ByUserSql,
+                new
+                {
+                    UserId = userId,
+                    ArticleId = articleId,
+                    ArticleSearch = string.IsNullOrWhiteSpace(articleSearch) ? null : articleSearch.Trim(),
+                    DateDebut = dateDebut,
+                    DateFin = dateFin
+                }
+            );
+            return rows.ToList();
+        }
+
+        private const string DifferenceByUserSql = @"
+                WITH ArticlePMP AS (
+                    SELECT 
+                        bra.IdArticle,
+                        CASE 
+                            WHEN SUM(ISNULL(bra.QuantiteReceve, 0)) > 0 
+                            THEN SUM(ISNULL(bra.PrixBonReception, 0) * ISNULL(bra.QuantiteReceve, 0)) / SUM(ISNULL(bra.QuantiteReceve, 0))
+                            ELSE 0 
+                        END AS PmpArticle
+                    FROM dbo.BRECEPTION_X_ARTICLE bra
+                    INNER JOIN Breception br ON bra.IdBonReception = br.IdBonReception
+                    WHERE ISNULL(bra.Supprime, 0) = 0 
+                      AND ISNULL(br.Supprime, 0) = 0
+                    GROUP BY bra.IdArticle
+                ),
+                BlBenificeByUser AS (
+                    SELECT 
+                        bl.Iduser AS UserId,
+                        ISNULL(SUM(
+                            (
+                                ISNULL(lbl.PrixBonLivraison, 0) - 
+                                (ISNULL(lbl.DernierPrixAchatTtc, 0) / NULLIF(1.0 + (ISNULL(lbl.TauxTva, 0) / 100.0), 0))
+                            ) * CAST(ISNULL(lbl.QuantiteLivree, 0) AS DECIMAL(18, 2))
+                        ), 0) AS GlobalBlBenifice
+                    FROM Blivraison bl
+                    INNER JOIN dbo.BLIVRAISON_X_ARTICLE lbl ON lbl.IdBonLivraison = bl.IdBonLivraison
+                    INNER JOIN dbo.ARTICLE a ON lbl.IdArticle = a.IdArticle
+                    WHERE ISNULL(bl.Supprime, 0) = 0
+                      AND (@UserId IS NULL OR bl.Iduser = @UserId)
+                      AND (@ArticleId IS NULL OR lbl.IdArticle = @ArticleId)
+                      AND (@ArticleSearch IS NULL OR a.RefArticle LIKE '%' + @ArticleSearch + '%' OR lbl.Designation LIKE '%' + @ArticleSearch + '%')
+                      AND (@DateDebut IS NULL OR bl.DateCreation >= @DateDebut)
+                      AND (@DateFin IS NULL OR bl.DateCreation < DATEADD(DAY, 1, CAST(@DateFin AS DATE)))
+                    GROUP BY bl.Iduser
+                ),
+                AvoirDetails AS (
+                    SELECT 
+                        ac.IdAvoirClient,
+                        ac.IdClient,
+                        ac.UserId,
+                        ac.DateCreation,
+                        ax.Id AS IdAvoirItem,
+                        ax.IdArticle,
+                        ISNULL(ax.QuantiteRetournee, 0) AS QuantiteRetournee,
+                        ISNULL(ax.PrixAvoir, 0) AS PrixAvoir
+                    FROM Avoirclient ac
+                    INNER JOIN dbo.AVOIRCLIENT_X_ARTICLE ax ON ac.IdAvoirClient = ax.IdAvoirClient
+                    INNER JOIN dbo.ARTICLE a ON ax.IdArticle = a.IdArticle
+                    WHERE ISNULL(ac.Supprime, 0) = 0 
+                      AND ISNULL(ax.Supprime, 0) = 0
+                      AND (@UserId IS NULL OR ac.UserId = @UserId)
+                      AND (@ArticleId IS NULL OR ax.IdArticle = @ArticleId)
+                      AND (@ArticleSearch IS NULL OR a.RefArticle LIKE '%' + @ArticleSearch + '%' OR ax.Designation LIKE '%' + @ArticleSearch + '%')
+                      AND (@DateDebut IS NULL OR ac.DateCreation >= @DateDebut)
+                      AND (@DateFin IS NULL OR ac.DateCreation < DATEADD(DAY, 1, CAST(@DateFin AS DATE)))
+                ),
+                MatchingBLCandidates AS (
+                    SELECT 
+                        ad.IdAvoirItem,
+                        bl.IdBonLivraison,
+                        COUNT(bl.IdBonLivraison) OVER (PARTITION BY ad.IdAvoirItem) AS BlMatchCount,
+                        (
+                            ISNULL(lbl.PrixBonLivraison, 0) - 
+                            (ISNULL(lbl.DernierPrixAchatTtc, 0) / NULLIF(1.0 + (ISNULL(lbl.TauxTva, 0) / 100.0), 0))
+                        ) AS BenificeUnitBl
+                    FROM AvoirDetails ad
+                    INNER JOIN Blivraison bl ON bl.IdClient = ad.IdClient
+                        AND bl.DateCreation >= DATEADD(MONTH, -3, ad.DateCreation)
+                        AND bl.DateCreation <= ad.DateCreation
+                        AND ISNULL(bl.Supprime, 0) = 0
+                    INNER JOIN dbo.BLIVRAISON_X_ARTICLE lbl ON lbl.IdBonLivraison = bl.IdBonLivraison
+                        AND lbl.IdArticle = ad.IdArticle
+                ),
+                AvoirItemCalculated AS (
+                    SELECT 
+                        ad.UserId,
+                        CASE 
+                            WHEN ISNULL(m.BlMatchCount, 0) = 1 
+                                THEN (m.BenificeUnitBl * CAST(ad.QuantiteRetournee AS DECIMAL(18, 2)))
+                            ELSE 
+                                ((ad.PrixAvoir - ISNULL(pmp.PmpArticle, 0)) * CAST(ad.QuantiteRetournee AS DECIMAL(18, 2)))
+                        END AS BenificeAvoirCalculated
+                    FROM AvoirDetails ad
+                    LEFT JOIN (
+                        SELECT IdAvoirItem, BenificeUnitBl, BlMatchCount,
+                               ROW_NUMBER() OVER (PARTITION BY IdAvoirItem ORDER BY IdBonLivraison DESC) AS rn
+                        FROM MatchingBLCandidates
+                    ) m ON ad.IdAvoirItem = m.IdAvoirItem AND m.rn = 1
+                    LEFT JOIN ArticlePMP pmp ON ad.IdArticle = pmp.IdArticle
+                ),
+                AvoirBenificeByUser AS (
+                    SELECT 
+                        UserId,
+                        ISNULL(SUM(BenificeAvoirCalculated), 0) AS GlobalAvoirBenifice
+                    FROM AvoirItemCalculated
+                    GROUP BY UserId
+                )
+                SELECT 
+                    u.IdUser AS UserId,
+                    u.Nom AS UserName,
+                    ISNULL(b.GlobalBlBenifice, 0) AS GlobalBlBenifice,
+                    ISNULL(a.GlobalAvoirBenifice, 0) AS GlobalAvoirBenifice,
+                    (ISNULL(b.GlobalBlBenifice, 0) - ISNULL(a.GlobalAvoirBenifice, 0)) AS DifferenceBenifice
+                FROM dbo.[USER] u
+                LEFT JOIN BlBenificeByUser b ON u.IdUser = b.UserId
+                LEFT JOIN AvoirBenificeByUser a ON u.IdUser = a.UserId
+                WHERE (@UserId IS NULL OR u.IdUser = @UserId)
+                  AND (ISNULL(b.GlobalBlBenifice, 0) <> 0 OR ISNULL(a.GlobalAvoirBenifice, 0) <> 0)
+                ORDER BY DifferenceBenifice DESC;
+            ";
+
+        public async Task<List<BenificeDifferenceByUserDto>> GetBenificeDifferenceByUserAsync(
+            int? userId = null,
+            int? articleId = null,
+            string? articleSearch = null,
+            DateTime? dateDebut = null,
+            DateTime? dateFin = null)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            var rows = await connection.QueryAsync<BenificeDifferenceByUserDto>(
+                DifferenceByUserSql,
                 new
                 {
                     UserId = userId,

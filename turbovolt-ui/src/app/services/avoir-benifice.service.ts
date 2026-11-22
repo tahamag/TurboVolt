@@ -5,6 +5,7 @@ import {
   AvoirBenificeByUser,
   AvoirBenificeDetail,
   AvoirBenificeFilter,
+  BenificeDifferenceByUser,
 }from '../models/wms.models';
 import { environment } from '../environments/environment';
 
@@ -48,5 +49,12 @@ export class AvoirBenificeService {
   getByUser(filter: AvoirBenificeFilter = {}): Observable<AvoirBenificeByUser[]> {
     const params = this.buildParams(filter);
     return this.http.get<AvoirBenificeByUser[]>(`${this.apiUrl}/by-user`, { params });
+  }
+  getDifferenceByUser( filter: AvoirBenificeFilter = {}): Observable<BenificeDifferenceByUser[]> {
+    const params = this.buildParams(filter);
+    return this.http.get<BenificeDifferenceByUser[]>(
+      `${this.apiUrl}/difference-by-user`,
+      { params }
+    );
   }
 }

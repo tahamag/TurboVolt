@@ -1,0 +1,201 @@
+<div class="dashboard-container" [@fadeSlideUp]>
+    <!-- En-tête -->
+    <div class="header-row">
+        <div>
+            <span class="eyebrow">ANALYSE FINANCIÈRE</span>
+            <h1 class="title">Bénéfice Globale par Utilisateur</h1>
+            <p class="subtitle">
+                Comparaison entre le bénéfice des Bons de Livraison (BL), l'impact des Avoirs et le bénéfice net
+            </p>
+        </div>
+    </div>
+
+    <!-- 3 Cartes KPI animées -->
+    <div class="kpi-grid">
+        <mat-card class="kpi-card bl-card" appearance="outlined">
+            <div class="kpi-inner">
+                <div class="icon-badge bl-badge">
+                    <mat-icon>local_shipping</mat-icon>
+                </div>
+                <div>
+                    <span class="kpi-title">Bénéfice Global BL</span>
+                    <div class="kpi-amount">
+                        {{ totalBl | number : '1.2-2' }} <span>DH</span>
+                    </div>
+                </div>
+            </div>
+        </mat-card>
+
+        <mat-card class="kpi-card avoir-card" appearance="outlined">
+            <div class="kpi-inner">
+                <div class="icon-badge avoir-badge">
+                    <mat-icon>assignment_return</mat-icon>
+                </div>
+                <div>
+                    <span class="kpi-title">Bénéfice Global Avoirs</span>
+                    <div class="kpi-amount">
+                        {{ totalAvoir | number : '1.2-2' }} <span>DH</span>
+                    </div>
+                </div>
+            </div>
+        </mat-card>
+
+        <mat-card class="kpi-card net-card" appearance="outlined">
+            <div class="kpi-inner">
+                <div class="icon-badge net-badge">
+                    <mat-icon>trending_up</mat-icon>
+                </div>
+                <div>
+                    <span class="kpi-title">Différence Nette (BL − Avoir)</span>
+                    <div class="kpi-amount" [class.text-danger]="totalDifference < 0"
+                        [class.text-success]="totalDifference >= 0">
+                        {{ totalDifference | number : '1.2-2' }} <span>DH</span>
+                    </div>
+                </div>
+            </div>
+        </mat-card>
+    </div>
+
+    <!-- Carte Filtres -->
+    <mat-card class="panel-card" appearance="outlined">
+        <mat-card-content>
+            <div class="filters-grid">
+                <mat-form-field appearance="outline">
+                    <mat-label>Utilisateur</mat-label>
+                    <mat-icon matPrefix>person</mat-icon>
+                    <mat-select [(ngModel)]="filter.userId" (selectionChange)="search()">
+                        <mat-option [value]="null">Tous les utilisateurs</mat-option>
+                        <mat-option *ngFor="let u of users" [value]="u.idUser ?? u.id">
+                            {{ u.nom ?? u.userName ?? ('Utilisateur #' + (u.idUser ?? u.id)) }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Article (Réf. / Désignation)</mat-label>
+                    <mat-icon matPrefix>inventory_2</mat-icon>
+                    <input matInput type="text" [(ngModel)]="filter.articleSearch"
+                        placeholder="Rechercher un article..." (keyup.enter)="search()" />
+                    <button *ngIf="filter.articleSearch" matSuffix mat-icon-button
+                        (click)="filter.articleSearch = ''; search()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Date début</mat-label>
+                    <input matInput [matDatepicker]="pickerDebut" [(ngModel)]="startDateObj" />
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerDebut"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerDebut></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Date fin</mat-label>
+                    <input matInput [matDatepicker]="pickerFin" [(ngModel)]="endDateObj" />
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerFin></mat-datepicker>
+                </mat-form-field>
+            </div>
+
+            <div class="actions-bar">
+                <button mat-stroked-button type="button" (click)="resetFilters()" [disabled]="loading">
+                    <mat-icon>restart_alt</mat-icon>
+                    Réinitialiser
+                </button>
+
+                <button mat-flat-button color="primary" type="button" class="search-btn" (click)="search()"
+                    [disabled]="loading">
+                    <mat-icon>tune</mat-icon>
+                    Appliquer les filtres
+                </button>
+            </div>
+        </mat-card-content>
+
+        <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    </mat-card>
+
+    <div *ngIf="errorMessage" class="alert-box">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Tableau Comparatif par Utilisateur -->
+    <mat-card class="panel-card" appearance="outlined">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>leaderboard</mat-icon>
+                Récapitulatif par Utilisateur ({{ items.length }})
+            </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content class="table-wrap">
+            <table mat-table [dataSource]="items" class="data-table" [@staggerList]="items.length">
+                <!-- Utilisateur -->
+                <ng-container matColumnDef="userName">
+                    <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+                    <td mat-cell *matCellDef="let row">
+                        <div class="user-cell">
+                            <span class="avatar">{{ (row.userName || 'U').charAt(0).toUpperCase() }}</span>
+                            <strong>{{ row.userName || ('Utilisateur #' + row.userId) }}</strong>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Bénéfice BL -->
+                <ng-container matColumnDef="globalBlBenifice">
+                    <th mat-header-cell *matHeaderCellDef class="align-right">Bénéfice BL</th>
+                    <td mat-cell *matCellDef="let row" class="align-right bl-value">
+                        {{ row.globalBlBenifice | number : '1.2-2' }} DH
+                    </td>
+                </ng-container>
+
+                <!-- Bénéfice Avoir -->
+                <ng-container matColumnDef="globalAvoirBenifice">
+                    <th mat-header-cell *matHeaderCellDef class="align-right">Bénéfice Avoirs</th>
+                    <td mat-cell *matCellDef="let row" class="align-right avoir-value">
+                        {{ row.globalAvoirBenifice | number : '1.2-2' }} DH
+                    </td>
+                </ng-container>
+
+                <!-- Ratio d'impact -->
+                <ng-container matColumnDef="impactRatio">
+                    <th mat-header-cell *matHeaderCellDef>Part Avoirs / BL</th>
+                    <td mat-cell *matCellDef="let row">
+                        <div class="ratio-box"
+                            [matTooltip]="'Part des avoirs : ' + (getAvoirSharePercent(row) | number : '1.1-1') + '%'">
+                            <div class="ratio-track">
+                                <div class="ratio-fill" [style.width.%]="getAvoirSharePercent(row)"></div>
+                            </div>
+                            <span class="ratio-label">
+                                {{ getAvoirSharePercent(row) | number : '1.0-0' }}%
+                            </span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Différence -->
+                <ng-container matColumnDef="differenceBenifice">
+                    <th mat-header-cell *matHeaderCellDef class="align-right">Différence</th>
+                    <td mat-cell *matCellDef="let row" class="align-right">
+                        <span class="diff-chip" [class.positive]="row.differenceBenifice >= 0"
+                            [class.negative]="row.differenceBenifice < 0">
+                            <mat-icon class="chip-icon">
+                                {{ row.differenceBenifice >= 0 ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon>
+                            {{ row.differenceBenifice | number : '1.2-2' }} DH
+                        </span>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns" class="animated-row"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="empty-state" [attr.colspan]="displayedColumns.length">
+                        Aucune donnée disponible pour la sélection actuelle.
+                    </td>
+                </tr>
+            </table>
+        </mat-card-content>
+    </mat-card>
+</div>

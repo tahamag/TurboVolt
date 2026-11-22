@@ -57,4 +57,12 @@ namespace TurboVolt.DTOs
         public int LignesCalculeesParPMP { get; set; }
         public decimal TotalBenificeAvoirCalculated { get; set; }
     }
+    public class BenificeDifferenceByUserDto
+    {
+        public int UserId { get; set; }
+        public string? UserName { get; set; }
+        public decimal GlobalBlBenifice { get; set; }
+        public decimal GlobalAvoirBenifice { get; set; }
+        public decimal DifferenceBenifice { get; set; }
+    }
 }

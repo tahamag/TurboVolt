@@ -52,5 +52,24 @@ namespace TurboVolt.Controllers
 
             return Ok(result);
         }
+
+        // GET: api/AvoirBenifice/difference-by-user?userId=1&articleId=42&articleSearch=REF01&dateDebut=2026-01-01&dateFin=2026-11-22
+        [HttpGet("difference-by-user")]
+        public async Task<ActionResult<List<BenificeDifferenceByUserDto>>> GetBenificeDifferenceByUser(
+        [FromQuery] int? userId = null,
+        [FromQuery] int? articleId = null,
+        [FromQuery] string? articleSearch = null,
+        [FromQuery] DateTime? dateDebut = null,
+        [FromQuery] DateTime? dateFin = null)
+        {
+            var result = await _avoirBenificeService.GetBenificeDifferenceByUserAsync(
+                userId,
+                articleId,
+                articleSearch,
+                dateDebut,
+                dateFin);
+
+            return Ok(result);
+        }
     }
 }
